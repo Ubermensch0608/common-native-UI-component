@@ -1,27 +1,116 @@
-# React + TypeScript + Vite
+[블로그 포스트로 보기](https://velog.io/@ubermensch0608/v00qq7c8)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+# 네이티브한 컴포넌트 만들기
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 들어가며
 
-## Expanding the ESLint configuration
+최근 기존 앱을 리빌딩 하는 프로젝트를 시작하게 되었습니다. 맡은 업무 중 기존 앱에서 사용하던 공통 UI 컴포넌트를 약간의 정비 후 변경될 앱으로 이식하는 것이었는데요. 팀원 혹은 누군가가 계속해서 사용하게 될 atom 단위의 컴포넌트이기 때문에 재사용성 측면에서 생각할 점이 많아지더라구요.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+오늘의 글은 이 과정에서 내가 고민했던 것과 코드리뷰를 통해 받은 피드백과 그것의 의미를 공유하려고 합니다.
 
-- Configure the top-level `parserOptions` property like this:
+## 공통 컴포넌트에서 중요하게 생각한 것
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+이식을 담당한 컴포넌트 중 가장 큰 배움을 얻은 컴포넌트가 Switch 컴포넌트이기 때문에 이 UI 컴포넌트를 중심으로 직접 ‘모두’가 사용하는 컴포넌트를 만든다고 생각해봅시다.
+
+### 재사용성
+
+우리가 만들 컴포넌트는 `공통`으로 사용하는 UI 컴포넌트이기 때문에 재사용성이 높아야합니다. 재사용성을 높이기 위해서는 해당 컴포넌트를 `어디서든` 적용하거나 확장하여 사용할 수 있어야합니다.
+
+### 유연성
+
+우리가 만들 컴포넌트는 여러 상황에 대처할 수 있는 컴포넌트여야 합니다. 작은 단위의 컴포넌트가 여러 상황을 대응할 수 없다면, 대응할 수 없는 상황이 발생할 때마다 새로운 공통 컴포넌트가 생겨날 것이기 때문입니다. 그렇기 때문에 거의 대부분의 상황을 커버할 수 있는 것이 좋습니다.
+
+### 손쉬운 사용
+
+우리가 만들 컴포넌트는 누구든 `쉽게` 사용할 수 있어야합니다. 앱을 구현하다보면 때론 구현이 복잡하여 쉽게 이해하기 어려운 코드를 작성할 수도 있지만, 공통 UI 컴포넌트는 특정 영역에만 국한 되어 쓰이지 않아 어디든 쓰일 수 있기 때문에 간단해야 하고, 누가 언제 사용하더라도 사용법을 직관적으로 알 수 있어야 합니다. 즉, 현재 일하는 동료들에게 컴포넌트에 대해 장황한 사용 설명을 하지 않고도 동료들은 해당 컴포넌트를 사용할 수 있어야합니다.
+
+시작이 되었던 Switch 컴포넌트의 모양새는 대략 다음과 같았습니다.
+
+![switch-1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/b956075f-604b-4358-b5bb-67ddf2adb53e/switch-1.png)
+
+위 컴포넌트는 우리가 아는 `스위치` 기능을 잘 수행합니다. Switch 컴포넌트를 사용하는 구현부에서 checked와 onClick 이벤트 함수를 알맞게 주입하면 on off에 따라 스위치의 스타일이 변경됩니다.
+
+![화면-기록-2023-10-22-오전-1.46.40_1.gif](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/a7571c9b-2822-4972-b90e-0023b9047414/%E1%84%92%E1%85%AA%E1%84%86%E1%85%A7%E1%86%AB-%E1%84%80%E1%85%B5%E1%84%85%E1%85%A9%E1%86%A8-2023-10-22-%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB-1.46.40_1.gif)
+
+하지만, 이 컴포넌트는 우리가 컴포넌트에서 중요하다고 했던 특성인 `재사용성`과 `유연성`을 만족시키지 못합니다.
+
+**유연성**
+
+만약 label의 위치가 토글의 아래쪽에 있어야한다면 어떻게 해야할까요? 다른 문구를 보이는 다수의 label이 필요할 수도 있습니다.
+
+또, 배경색이 약간의 스타일 변화가 있다고 하면
+
+**재사용성**
+
+만약 Switch 컴포넌트가 form 안에서 구현되어 제출되어야할 때의 정보만 필요하다면 어떨까요? 다시말해, state가 필요없는 uncontrolled 방식으로 구현하는 것은 현재로서는 불가능해보입니다.
+
+uncontrolled 방식을 지원하는 react-hook-form 과 같은 라이브러리와 함께 쓰이는 경우는 두 말할 것 없어 보이네요.
+
+## 개선
+
+확인된 문제점은 많았지만, 오히려 좋습니다. 이제부터 더 개선된 공통 UI 컴포넌트를 만들 수 있으니까요. 처음으로 떠올렸던 해결책은 컴파운드 컴포넌트 패턴을 사용하여 컴포넌트의 유연성을 높이는 것이었습니다.
+
+### 컴파운드 컴포넌트 패턴
+
+![switch-2.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/adc7f4b3-e025-4773-9d42-94f61db7fcf5/switch-2.png)
+
+컴파운드 컴포넌트 패턴을 이용하면 하나의 스타일을 강요하던 이전과 달리 Label이나 Toggle 컴포넌트를 조합하여 여러가지 용도로 사용할 수 있습니다.
+
+![switch-3.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/0763a4cb-63ce-4537-afe4-07a46525e78d/switch-3.png)
+
+여러 개의 라벨을 요구하는 경우에도 커버가 될뿐 아니라, 라벨이 토글 이후에 위치하는 경우에도 손 쉽게 변경할 수 있습니다. 또, 내부적으로 Context API를 사용하였기때문에 Switch의 props에 state와 이벤트 함수를 단 한 번 지정 해준다면 내부 요소는 신경쓸 필요가 없게 됩니다.
+
+만약, 컴파운드 컴포넌트 패턴을 사용하지 않고 동일한 문제를 해결하려면 어떻게 해야할까요?
+
+![switch-4.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/24894756-6a55-496f-900f-f989151dc0fd/switch-4.png)
+
+외부에서 재정의하는 경우가 발생할 때마다 props 인터페이스는 계속해서 늘어날 것이고, Switch 컴포넌트를 사용하는 개발자는 스위치를 사용할 때 알아야할 정보가 많아집니다. 가령, 내부에서 사용하는 label이 늘어나기라도 한다면…컴포넌트를 손 볼 생각에 끔찍해지네요. 역할의 분리가 잘 되어있지 않아 Switch 컴포넌트가 모든 것을 담당하게 되고 복잡성이 늘어나는 것입니다.
+
+![switch-5.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/e62117a5-90af-4aac-9975-0f956cfaa47f/switch-5.png)
+
+컴파운드 컴포넌트 패턴을 사용한 방식에서는 이렇게 각 구성 요소를 구현 시점에 지정하여 원하는 HTML 구조를 만들 수 있으며, 각 요소에 대한 변경사항이 생길 때는 그 요소에 대해서만 신경쓰면 됩니다. 가령 요소에 대한 스타일을 변경해야한다고 할 때, 독립적인 관리를 할 수 있습니다.
+
+### Ref를 이용하여 재사용성 높이기
+
+많은 부분이 개선되었다고 할 수 있지만, 제가 놓치고 있던 점이 있습니다. 지금까지의 Switch 컴포넌트는 외부에서 state를 주입받는 것을 전제하여 외부 상태를 변경합니다. 즉, 외부 상태의 주입 없이는 이 컴포넌트는 동작하지 않는 것입니다.
+
+대부분의 경우, 스위치 상태에 따라 데이터가 변경되고 새로운 화면을 보여주기 위해 재렌더링필요합니다. 하지만, form 안에서의 스위치와 같이 굳이 다시 렌더링을 할 필요가 없는 경우도 있습니다. 정확히는 스위치의 on off가 화면에 영향을 주지 않고, 특정 타이밍에 정보가 필요한 경우 `uncontrolled` 방식으로 컴포넌트를 처리하는 것이 좋습니다.
+
+```jsx
+<input type="checkbox" />
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+이 요소는 단순한 input입니다. checked나 onChange 등 상태와 관련된 정보가 없음에도 checkbox의 본래 기능에 따라 체크가 on off 됩니다. 렌더링을 다시 시키지도 않으면서 말이지요.
+
+리액트에서 우리가 작성하는 JSX는 실제 HTML이 아니라 자바스크립트를 리액트 내부적으로 HTML으로 변환시켜주는 것이기 때문에 DOM을 직접적으로 다루기 위해서는 ref라는 어트리뷰트를 사용해야합니다. 그런데 ref를 외부에서 주입받을 수도 있어야하는데 이런 경우에는 조금 복잡해집니다.
+
+함수형 컴포넌트의 첫 번째 인자는 우리가 일반적으로 사용하는 props의 집합이고, 두 번째 인자를 통해 ref를 전달해줍니다.
+
+ref를 적용한 컴포넌트는 다음과 같습니다. 스위치 기능에서 필요한 checked 상태는 checkbox type을 가지고 있는 input에서 얻을 수 있기 때문에 div에서 input태그로 변경했습니다.
+
+![switch-6.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/6a5d6e49-0461-46ab-8d4b-e814887f3318/switch-6.png)
+
+이제 Switch 컴포넌트는 외부에서 상태를 전달하지 않았을 때는 일반적인 input 처럼 uncontrolled 방식으로 사용됩니다. 반대로 상태를 전달했을 때는 해당 상태에 따라 재렌더링을 발생시키는 controlled 방식으로 변경됩니다.
+
+## 마무리
+
+지금까지 개선한 Switch 컴포넌트는 재사용성과 유연성을 많은 부분 개선시켰지만 아직 더 손볼게 남아있을 수도 있을겁니다. 그래도 최대한 기존 input 컴포넌트를 다루듯이 공통 컴포넌트를 제작하여 이 컴포넌트에 대해 특별한 러닝커브 없이 누구나 손쉽게 사용할 수 있게 했다는 점에서 충분히 쓸만한 컴포넌트라고 생각합니다.
+
+**구현부**
+
+```jsx
+const Component = () => {
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <Switch checked={checked} onChange={() => setChecked((prev) => !prev)}>
+      <Switch.Label>라벨</Switch.Label>
+      <Switch.Toggle />
+    </Switch>
+  );
+};
+```
+
+이렇게 저는 우리에게 익숙한 기존 요소의 인터페이스 사용을 지향하는 컴포넌트가 **네이티브한 컴포넌트**라고 정의하게 되었습니다. 특히 사용 범위가 전역적이고 저수준의 UI컴포넌트인 경우, 네이티브 컴포넌트 방식으로 구현하는 편이 앞으로 있을 변경에도 유연함은 물론, 누구든 언제나 쓸 수 있다는 점에도 도움이 된다는 점에서 이러한 방식을 항상 생각하면서 컴포넌트를 제작을 할 것 같습니다.
