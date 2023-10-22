@@ -1,0 +1,52 @@
+.button {
+  display: flex;
+  padding: 2px 4px;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+}
+
+.toggle {
+  position: relative;
+  background-color: gainsboro;
+  width: 50px;
+  height: 28px;
+  border-radius: 28px;
+  -webkit-border-radius: 28px;
+  -moz-border-radius: 28px;
+  -ms-border-radius: 28px;
+  -o-border-radius: 28px;
+
+  &::after {
+    position: absolute;
+    content: "";
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    background-color: white;
+    top: 4px;
+    left: 4px;
+    transition: 0.2s;
+  }
+}
+
+.checkbox {
+  &:checked + .toggle {
+    background-color: blueviolet;
+    &::after {
+      transform: translateX(100%);
+      -webkit-transform: translateX(100%);
+      -moz-transform: translateX(100%);
+      -ms-transform: translateX(100%);
+      -o-transform: translateX(100%);
+    }
+  }
+}
