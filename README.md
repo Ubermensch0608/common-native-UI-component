@@ -28,11 +28,11 @@
 
 시작이 되었던 Switch 컴포넌트의 모양새는 대략 다음과 같았습니다.
 
-![switch-1.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/b956075f-604b-4358-b5bb-67ddf2adb53e/switch-1.png)
+![switch-1.png](/src/assets/switch-1.png)
 
 위 컴포넌트는 우리가 아는 `스위치` 기능을 잘 수행합니다. Switch 컴포넌트를 사용하는 구현부에서 checked와 onClick 이벤트 함수를 알맞게 주입하면 on off에 따라 스위치의 스타일이 변경됩니다.
 
-![화면-기록-2023-10-22-오전-1.46.40_1.gif](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/a7571c9b-2822-4972-b90e-0023b9047414/%E1%84%92%E1%85%AA%E1%84%86%E1%85%A7%E1%86%AB-%E1%84%80%E1%85%B5%E1%84%85%E1%85%A9%E1%86%A8-2023-10-22-%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB-1.46.40_1.gif)
+![toggle.gif](/src/assets/toggle.gif)
 
 하지만, 이 컴포넌트는 우리가 컴포넌트에서 중요하다고 했던 특성인 `재사용성`과 `유연성`을 만족시키지 못합니다.
 
@@ -54,21 +54,21 @@ uncontrolled 방식을 지원하는 react-hook-form 과 같은 라이브러리�
 
 ### 컴파운드 컴포넌트 패턴
 
-![switch-2.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/adc7f4b3-e025-4773-9d42-94f61db7fcf5/switch-2.png)
+![switch-2.png](/src/assets/switch-2.png)
 
 컴파운드 컴포넌트 패턴을 이용하면 하나의 스타일을 강요하던 이전과 달리 Label이나 Toggle 컴포넌트를 조합하여 여러가지 용도로 사용할 수 있습니다.
 
-![switch-3.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/0763a4cb-63ce-4537-afe4-07a46525e78d/switch-3.png)
+![switch-3.png](/src/assets/switch-3.png)
 
 여러 개의 라벨을 요구하는 경우에도 커버가 될뿐 아니라, 라벨이 토글 이후에 위치하는 경우에도 손 쉽게 변경할 수 있습니다. 또, 내부적으로 Context API를 사용하였기때문에 Switch의 props에 state와 이벤트 함수를 단 한 번 지정 해준다면 내부 요소는 신경쓸 필요가 없게 됩니다.
 
 만약, 컴파운드 컴포넌트 패턴을 사용하지 않고 동일한 문제를 해결하려면 어떻게 해야할까요?
 
-![switch-4.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/24894756-6a55-496f-900f-f989151dc0fd/switch-4.png)
+![switch-4.png](/src/assets/switch-4.png)
 
 외부에서 재정의하는 경우가 발생할 때마다 props 인터페이스는 계속해서 늘어날 것이고, Switch 컴포넌트를 사용하는 개발자는 스위치를 사용할 때 알아야할 정보가 많아집니다. 가령, 내부에서 사용하는 label이 늘어나기라도 한다면…컴포넌트를 손 볼 생각에 끔찍해지네요. 역할의 분리가 잘 되어있지 않아 Switch 컴포넌트가 모든 것을 담당하게 되고 복잡성이 늘어나는 것입니다.
 
-![switch-5.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/e62117a5-90af-4aac-9975-0f956cfaa47f/switch-5.png)
+![switch-5.png](/src/assets/switch-5.png)
 
 컴파운드 컴포넌트 패턴을 사용한 방식에서는 이렇게 각 구성 요소를 구현 시점에 지정하여 원하는 HTML 구조를 만들 수 있으며, 각 요소에 대한 변경사항이 생길 때는 그 요소에 대해서만 신경쓰면 됩니다. 가령 요소에 대한 스타일을 변경해야한다고 할 때, 독립적인 관리를 할 수 있습니다.
 
@@ -90,7 +90,7 @@ uncontrolled 방식을 지원하는 react-hook-form 과 같은 라이브러리�
 
 ref를 적용한 컴포넌트는 다음과 같습니다. 스위치 기능에서 필요한 checked 상태는 checkbox type을 가지고 있는 input에서 얻을 수 있기 때문에 div에서 input태그로 변경했습니다.
 
-![switch-6.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ae42ddab-f52a-4185-b6d8-5b159f46dd43/6a5d6e49-0461-46ab-8d4b-e814887f3318/switch-6.png)
+![switch-6.png](/src/assets/switch-6.png)
 
 이제 Switch 컴포넌트는 외부에서 상태를 전달하지 않았을 때는 일반적인 input 처럼 uncontrolled 방식으로 사용됩니다. 반대로 상태를 전달했을 때는 해당 상태에 따라 재렌더링을 발생시키는 controlled 방식으로 변경됩니다.
 
